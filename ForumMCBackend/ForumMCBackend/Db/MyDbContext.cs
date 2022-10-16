@@ -6,6 +6,10 @@ namespace ForumMCBackend.Db
     public class MyDbContext : DbContext
     {
 		public DbSet<Account>? Accounts { get; set; }
+		public DbSet<Category>? Categories { get; set; }
+		public DbSet<Topic>? Topics { get; set; }
+		public DbSet<Message>? Messages { get; set; }
+
 
 		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{

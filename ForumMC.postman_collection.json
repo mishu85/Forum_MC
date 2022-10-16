@@ -18,7 +18,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"FirstForum\",\r\n    \"password\": \"aligator\"\r\n}",
+							"raw": "{\r\n    \"userName\": \"FirstForum\",\r\n    \"password\": \"aligatorasa\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -69,8 +69,49 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Topics",
+			"item": [
+				{
+					"name": "Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Discutie\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/topics",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"topics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKV1RTZXJ2aWNlQWNjZXNzVG9rZW4iLCJqdGkiOiIwYjFmOWEyOS00MTNiLTQwNjgtYjJmZC0yYjkyZDRmMWFjYTUiLCJpYXQiOiIxMC8xNi8yMDIyIDk6MzY6MDMgQU0iLCJVc2VySWQiOiIxIiwiVXNlck5hbWUiOiJGaXJzdEZvcnVtIiwiZXhwIjoxNjY1OTEzNTYzLCJpc3MiOiJKV1RBdXRoZW50aWNhdGlvblNlcnZlciIsImF1ZCI6IkpXVFNlcnZpY2VQb3N0bWFuQ2xpZW50In0.Ba1Wxtf4KhsHFTPOC63pAdNnROpSazhOjBTYWLRfd7U",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",

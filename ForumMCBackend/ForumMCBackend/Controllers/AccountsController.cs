@@ -67,6 +67,7 @@ namespace ForumMCBackend.Controllers
             }
 
             account.Password = BCrypt.Net.BCrypt.HashPassword(account.Password);
+            account.Role = AccountRoles.USER;
             _dbContext.Accounts.Add(account);
             _dbContext.SaveChanges();
             account.Password = null;

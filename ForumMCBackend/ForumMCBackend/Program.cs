@@ -1,11 +1,27 @@
 using ForumMCBackend.Db;
+using ForumMCBackend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 using (var context = new MyDbContext())
 {
-    context.Database.EnsureCreated();
+    var dbCreated = context.Database.EnsureCreated();
+    if (dbCreated)
+    {
+        context.Accounts.Add(new Account
+        {
+            UserName = "Admin",
+            Password = "Admin",
+            Role = AccountRoles.ADMIN,
+        });
+
+        context.Categories.Add(new Category { Title = "Cars" });
+        context.Categories.Add(new Category { Title = "Space" });
+        context.Categories.Add(new Category { Title = "Cooking" });
+
+        context.SaveChanges();
+    }
 }
 
 var builder = WebApplication.CreateBuilder(args);

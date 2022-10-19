@@ -51,7 +51,7 @@ namespace ForumMCBackend.Controllers
                 _configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddDays(30),
                 signingCredentials: signIn);
 
             return new ObjectResult(new JwtSecurityTokenHandler().WriteToken(token));

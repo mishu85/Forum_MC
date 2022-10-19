@@ -24,23 +24,25 @@ namespace ForumMCBackend.Controllers
         [HttpPost]
         public ActionResult<Topic> Post([FromHeader] string authorization, Topic topic)
         {
-            if(topic.Title == null)
+            if (topic.Title == null)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest};
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
 
-            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            else
             {
                 var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
                 topic.CreatedBy = requestFrom;
             }
-            else {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
 
             _dbContext.Topics.Add(topic);
             _dbContext.SaveChanges();
+            topic.CreatedBy.Password = null;
             return new ObjectResult(topic) { StatusCode = StatusCodes.Status201Created };
         }
     }

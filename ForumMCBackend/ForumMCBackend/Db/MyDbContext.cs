@@ -19,7 +19,7 @@ namespace ForumMCBackend.Db
 
 		public override int SaveChanges()
 		{
-			DateTime currentDateTime = DateTime.Now.ToUniversalTime();
+			DateTime currentDateTime = DateTime.UtcNow;
 
 			// get all the entities in the change tracker - this could be optimized
 			// to fetch only the entities with "State == added" if that's the only 

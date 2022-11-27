@@ -45,5 +45,13 @@ namespace ForumMCBackend.Controllers
             topic.CreatedBy.Password = null;
             return new ObjectResult(topic) { StatusCode = StatusCodes.Status201Created };
         }
+
+        // TODO: hide hidden topics
+        [HttpGet]
+        public List<Topic> GetAllTopics()
+        {
+            var topics = _dbContext.Topics.ToList();
+            return topics;
+        }
     }
 }

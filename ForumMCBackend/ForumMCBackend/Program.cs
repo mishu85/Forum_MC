@@ -12,7 +12,7 @@ using (var context = new MyDbContext())
         context.Accounts.Add(new Account
         {
             UserName = "Admin",
-            Password = "Admin",
+            Password = BCrypt.Net.BCrypt.HashPassword("Admin"),
             Role = AccountRoles.ADMIN,
         });
 

@@ -1,8 +1,11 @@
 ﻿using ForumMCBackend.Db;
 using ForumMCBackend.Models;
+using ForumMCBackend.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 
@@ -72,6 +75,56 @@ namespace ForumMCBackend.Controllers
             _dbContext.SaveChanges();
             account.Password = null;
             return new ObjectResult(account) { StatusCode = StatusCodes.Status201Created };
+        }
+
+        [Authorize]
+        [HttpGet]
+        public ActionResult<List<Account>> Get([FromHeader] string authorization)
+        {
+            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            else
+            {
+                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
+                if (requestFrom.Role != AccountRoles.ADMIN)
+                {
+                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
+                }
+            }
+
+            var accounts = _dbContext.Accounts.ToList();
+            return accounts;
+        }
+
+        [Authorize]
+        [HttpPatch]
+        public ActionResult<Account> Patch([FromHeader] string authorization, Account account)
+        {
+            var dbAccount = _dbContext.Accounts.SingleOrDefault(entity => entity.Id == account.Id);
+            if (dbAccount == null)
+            {
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
+            }
+
+            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
+            }
+            else
+            {
+                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
+                if (requestFrom.Role != AccountRoles.ADMIN)
+                {
+                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
+                }
+            }
+
+            dbAccount.Role = account.Role;
+            _dbContext.SaveChanges();
+
+            return new ObjectResult(dbAccount);
         }
     }
 }

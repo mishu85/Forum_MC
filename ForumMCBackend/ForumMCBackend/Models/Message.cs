@@ -9,6 +9,6 @@ namespace ForumMCBackend.Models
         public Topic? Topic { get; set; }
         public DateTime GoesLive { get; set; } = DateTime.UtcNow;
         public bool IsHidden { get; set; } = false;
-        public Message? InReplyTo { get; set; } //null
+        public Message? InReplyTo { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ForumMCBackend.Db;
 using ForumMCBackend.Models;
+using ForumMCBackend.Repositories;
 using ForumMCBackend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,14 @@ namespace ForumMCBackend.Controllers
         private readonly ILogger<AccountsController> _logger;
         private readonly SQLiteContext _dbContext;
         public IConfiguration _configuration;
+        private IAccountsRepository _accountsRepository;
 
-        public AccountsController(ILogger<AccountsController> logger, IConfiguration config, SQLiteContext dbContext)
+        public AccountsController(ILogger<AccountsController> logger, IConfiguration config, SQLiteContext dbContext, IAccountsRepository accountsRepository)
         {
             _logger = logger;
             _dbContext = dbContext;
             _configuration = config;
+            _accountsRepository = accountsRepository;
         }
 
         [HttpPost("login")]
@@ -44,8 +47,7 @@ namespace ForumMCBackend.Controllers
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("UserId", account.Id.ToString()),
-                        new Claim("UserName", account.UserName),
+                        new Claim(JwtRegisteredClaimNames.Name, account.Id.ToString()),
                     };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -79,22 +81,17 @@ namespace ForumMCBackend.Controllers
 
         [Authorize]
         [HttpGet]
-        public ActionResult<List<Account>> Get([FromHeader] string authorization)
+        public ActionResult<List<Account>> Get()
         {
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.getByID(int.Parse(requestFromId));
+
+            if (requestFrom?.Role != AccountRoles.ADMIN)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                if (requestFrom.Role != AccountRoles.ADMIN)
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
-                }
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
-            var accounts = _dbContext.Accounts.ToList();
+            var accounts = _accountsRepository.getAll();
             return accounts;
         }
 

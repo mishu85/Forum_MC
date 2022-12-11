@@ -35,8 +35,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<SQLiteContext>();
+
 builder.Services.AddScoped<SQLiteCategoriesRepository>();
 builder.Services.AddScoped<ICategoriesRepository>(x => x.GetRequiredService<SQLiteCategoriesRepository>());
+builder.Services.AddScoped<SQLiteAccountsRepository>();
+builder.Services.AddScoped<IAccountsRepository>(x => x.GetRequiredService<SQLiteAccountsRepository>());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -69,4 +72,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// TODO: use to add role restriction middleware
+// app.Use((context, next) =>
+// {
+//     var stream = context.Request.Headers["authorization"];
+//     var handler = new JwtSecurityTokenHandler();
+//     var jsonToken = handler.ReadToken(stream);
+//     var tokenS = jsonToken as JwtSecurityToken;
+
+//     var accountId = tokenS.Claims.First(claim => claim.Type == "UserId").Value;
+
+//     var dbContext = context.RequestServices.GetRequiredService<SQLiteContext>();
+//     var account = dbContext.Accounts.SingleOrDefault(entity => entity.Id == int.Parse(accountId));
+//     //context.User = account;
+//     Console.WriteLine(context.User);
+
+//     return next(context);
+// });
 app.Run();

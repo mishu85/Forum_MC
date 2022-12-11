@@ -1,410 +1,338 @@
 {
-	"info": {
-		"_postman_id": "2f5a2580-fa26-40c3-84a0-d42ea2c3d2ee",
-		"name": "ForumMC",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Accounts",
-			"item": [
-				{
-					"name": "Login",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"Admin\",\r\n    \"password\": \"Admin\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/accounts/login",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"accounts",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Register",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"Misu\",\r\n    \"password\": \"1234\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/accounts/register",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"accounts",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/accounts",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"accounts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Patch",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id\": 2,\r\n    \"role\": 2\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/accounts",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"accounts"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
-			]
-		},
-		{
-			"name": "Topics",
-			"item": [
-				{
-					"name": "Post",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"De ce nu se mai vad stelele?\",\r\n    \"category\": {\r\n        \"id\": 2\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/topics",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"topics"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Patch",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id\": 1,\r\n    \"isHidden\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/topics",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"topics"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Latest 10 Topics",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/topics",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"topics"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Topic Messages",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/topics/2/messages",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"topics",
-								"2",
-								"messages"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Messages",
-			"item": [
-				{
-					"name": "Post",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"BodyText\": \"mda\",\r\n    \"Topic\": {\r\n        \"Id\": 2\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/messages",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"messages"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Post Reply",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"BodyText\": \"nice\",\r\n    \"Topic\": {\r\n        \"Id\": 2\r\n    },\r\n    \"InReplyTo\": {\r\n         \"Id\": 2\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/messages",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"messages"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Patch",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id\": 1,\r\n    \"isHidden\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseurl}}/messages",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"messages"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Replies to Message",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/messages/1/replies",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"messages",
-								"1",
-								"replies"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Categories",
-			"item": [
-				{
-					"name": "Get All",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/categories",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"categories"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Category Topics",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseurl}}/categories/2/topics",
-							"host": [
-								"{{baseurl}}"
-							],
-							"path": [
-								"categories",
-								"2",
-								"topics"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKV1RTZXJ2aWNlQWNjZXNzVG9rZW4iLCJqdGkiOiIwMzA3MThlMC05MDc0LTRlNGItYmE1ZS1jMzBiNTE3ODE5MTQiLCJpYXQiOiIxMi8xLzIwMjIgMTA6MTA6NTIgQU0iLCJVc2VySWQiOiIxIiwiVXNlck5hbWUiOiJBZG1pbiIsImV4cCI6MTY3MjQ4MTQ1MiwiaXNzIjoiSldUQXV0aGVudGljYXRpb25TZXJ2ZXIiLCJhdWQiOiJKV1RTZXJ2aWNlUG9zdG1hbkNsaWVudCJ9.G9H3QqXbDgPaQjv8zEWEosz1PXzCQdzuVyjmqeIzOjY",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "baseurl",
-			"value": "http://localhost:6600/api",
-			"type": "default"
-		}
-	]
+  "info": {
+    "_postman_id": "2f5a2580-fa26-40c3-84a0-d42ea2c3d2ee",
+    "name": "ForumMC",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userName\": \"Admin\",\r\n    \"password\": \"Admin\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/accounts/login",
+              "host": ["{{baseurl}}"],
+              "path": ["accounts", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userName\": \"Misu\",\r\n    \"password\": \"1234\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/accounts/register",
+              "host": ["{{baseurl}}"],
+              "path": ["accounts", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/accounts",
+              "host": ["{{baseurl}}"],
+              "path": ["accounts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Patch",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\": 2,\r\n    \"role\": 2\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/accounts",
+              "host": ["{{baseurl}}"],
+              "path": ["accounts"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [""]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topics",
+      "item": [
+        {
+          "name": "Post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"title\": \"De ce nu se mai vad stelele?\",\r\n    \"category\": {\r\n        \"id\": 2\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/topics",
+              "host": ["{{baseurl}}"],
+              "path": ["topics"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Patch",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\": 1,\r\n    \"isHidden\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/topics",
+              "host": ["{{baseurl}}"],
+              "path": ["topics"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Latest 10 Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/topics",
+              "host": ["{{baseurl}}"],
+              "path": ["topics"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Topic Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/topics/2/messages",
+              "host": ["{{baseurl}}"],
+              "path": ["topics", "2", "messages"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"BodyText\": \"mda\",\r\n    \"Topic\": {\r\n        \"Id\": 2\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/messages",
+              "host": ["{{baseurl}}"],
+              "path": ["messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post Reply",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"BodyText\": \"nice\",\r\n    \"Topic\": {\r\n        \"Id\": 2\r\n    },\r\n    \"InReplyTo\": {\r\n         \"Id\": 2\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/messages",
+              "host": ["{{baseurl}}"],
+              "path": ["messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Patch",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\": 1,\r\n    \"isHidden\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseurl}}/messages",
+              "host": ["{{baseurl}}"],
+              "path": ["messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Replies to Message",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/messages/1/replies",
+              "host": ["{{baseurl}}"],
+              "path": ["messages", "1", "replies"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/categories",
+              "host": ["{{baseurl}}"],
+              "path": ["categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseurl}}/categories/2/topics",
+              "host": ["{{baseurl}}"],
+              "path": ["categories", "2", "topics"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJKV1RTZXJ2aWNlQWNjZXNzVG9rZW4iLCJqdGkiOiIwMzA3MThlMC05MDc0LTRlNGItYmE1ZS1jMzBiNTE3ODE5MTQiLCJpYXQiOiIxMi8xLzIwMjIgMTA6MTA6NTIgQU0iLCJVc2VySWQiOiIxIiwiVXNlck5hbWUiOiJBZG1pbiIsImV4cCI6MTY3MjQ4MTQ1MiwiaXNzIjoiSldUQXV0aGVudGljYXRpb25TZXJ2ZXIiLCJhdWQiOiJKV1RTZXJ2aWNlUG9zdG1hbkNsaWVudCJ9.G9H3QqXbDgPaQjv8zEWEosz1PXzCQdzuVyjmqeIzOjY",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseurl",
+      "value": "http://localhost:6600/api",
+      "type": "default"
+    }
+  ]
 }

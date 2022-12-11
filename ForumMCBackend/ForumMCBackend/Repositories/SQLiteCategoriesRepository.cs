@@ -9,7 +9,7 @@ namespace ForumMCBackend.Repositories
 
         public List<Category> getAll()
         {
-            var categories = _context.Categories.ToList();
+            var categories = _context?.Categories?.ToList() ?? new List<Category>();
             return categories;
         }
     }

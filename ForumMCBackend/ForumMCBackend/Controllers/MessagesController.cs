@@ -13,9 +13,9 @@ namespace ForumMCBackend.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly ILogger<MessagesController> _logger;
-        private readonly MyDbContext _dbContext;
+        private readonly SQLiteContext _dbContext;
 
-        public MessagesController(ILogger<MessagesController> logger, MyDbContext dbContext)
+        public MessagesController(ILogger<MessagesController> logger, SQLiteContext dbContext)
         {
             _logger = logger;
             _dbContext = dbContext;

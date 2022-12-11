@@ -6,7 +6,7 @@ namespace ForumMCBackend.Utils
 {
     public class AuthenticationUtils
     {
-        public static Account GetAccountFromToken(string token, MyDbContext dbContext)
+        public static Account GetAccountFromToken(string token, SQLiteContext dbContext)
         {
             var stream = token;
             var handler = new JwtSecurityTokenHandler();

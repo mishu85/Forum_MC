@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Db
 {
-    public class MyDbContext : DbContext
+    public class SQLiteContext : DbContext
     {
 		public DbSet<Account>? Accounts { get; set; }
 		public DbSet<Category>? Categories { get; set; }

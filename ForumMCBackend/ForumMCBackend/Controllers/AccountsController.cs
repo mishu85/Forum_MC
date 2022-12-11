@@ -16,10 +16,10 @@ namespace ForumMCBackend.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly ILogger<AccountsController> _logger;
-        private readonly MyDbContext _dbContext;
+        private readonly SQLiteContext _dbContext;
         public IConfiguration _configuration;
 
-        public AccountsController(ILogger<AccountsController> logger, IConfiguration config, MyDbContext dbContext)
+        public AccountsController(ILogger<AccountsController> logger, IConfiguration config, SQLiteContext dbContext)
         {
             _logger = logger;
             _dbContext = dbContext;
@@ -106,6 +106,11 @@ namespace ForumMCBackend.Controllers
             if (dbAccount == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
+            }
+
+            if (!Enum.IsDefined(typeof(AccountRoles), account.Role)) 
+            {
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
             if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))

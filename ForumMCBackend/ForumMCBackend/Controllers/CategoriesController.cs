@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
+using ForumMCBackend.Repositories;
 
 namespace ForumMCBackend.Controllers
 {
@@ -13,18 +14,20 @@ namespace ForumMCBackend.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ILogger<CategoriesController> _logger;
-        private readonly MyDbContext _dbContext;
+        private readonly SQLiteContext _dbContext;
+        private readonly ICategoriesRepository _categoriesRepository;
 
-        public CategoriesController(ILogger<CategoriesController> logger, MyDbContext dbContext)
+        public CategoriesController(ILogger<CategoriesController> logger, SQLiteContext dbContext, ICategoriesRepository categoriesRepository)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _categoriesRepository = categoriesRepository;
         }
 
         [HttpGet]
         public ActionResult<List<Category>> Get()
         {
-            var categories = _dbContext.Categories.ToList();
+            var categories = _categoriesRepository.getAll();
             return categories;
         }
 

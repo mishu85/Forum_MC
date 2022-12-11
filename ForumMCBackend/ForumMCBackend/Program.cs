@@ -1,10 +1,11 @@
 using ForumMCBackend.Db;
 using ForumMCBackend.Models;
+using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-using (var context = new MyDbContext())
+using (var context = new SQLiteContext())
 {
     var dbCreated = context.Database.EnsureCreated();
     if (dbCreated)
@@ -33,7 +34,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<MyDbContext>();
+builder.Services.AddScoped<SQLiteContext>();
+builder.Services.AddScoped<SQLiteCategoriesRepository>();
+builder.Services.AddScoped<ICategoriesRepository>(x => x.GetRequiredService<SQLiteCategoriesRepository>());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

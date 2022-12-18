@@ -42,6 +42,7 @@ namespace ForumMCBackend.Controllers
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim(JwtRegisteredClaimNames.Name, account.Id.ToString()),
+                        new Claim(ClaimTypes.Role, account.Role.ToString()),
                     };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -72,18 +73,10 @@ namespace ForumMCBackend.Controllers
             return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
         }
 
-        [Authorize]
+        [Authorize(Roles = "ADMIN")]
         [HttpGet]
         public ActionResult<List<Account>> Get()
         {
-            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
-            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
-
-            if (requestFrom?.Role != AccountRoles.ADMIN)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
-            }
-
             var accounts = _accountsRepository.GetAll();
             return accounts;
         }

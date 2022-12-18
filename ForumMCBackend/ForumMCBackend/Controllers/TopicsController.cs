@@ -1,10 +1,7 @@
-﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
-using ForumMCBackend.Utils;
+﻿using ForumMCBackend.Models;
+using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
-using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Controllers
 {
@@ -12,25 +9,29 @@ namespace ForumMCBackend.Controllers
     [Route("[controller]")]
     public class TopicsController : ControllerBase
     {
-        private readonly ILogger<TopicsController> _logger;
-        private readonly SQLiteContext _dbContext;
+        private readonly ICategoriesRepository _categoriesRepository;
+        private readonly IAccountsRepository _accountsRepository;
+        private readonly ITopicsRepository _topicsRepository;
+        private readonly IMessagesRepository _messagesRepository;
 
-        public TopicsController(ILogger<TopicsController> logger, SQLiteContext dbContext)
+        public TopicsController(ICategoriesRepository categoriesRepository, IAccountsRepository accountsRepository, ITopicsRepository topicsRepository, IMessagesRepository messagesRepository)
         {
-            _logger = logger;
-            _dbContext = dbContext;
+            _categoriesRepository = categoriesRepository;
+            _accountsRepository = accountsRepository;
+            _topicsRepository = topicsRepository;
+            _messagesRepository = messagesRepository;
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult<Topic> Post([FromHeader] string authorization, Topic topic)
+        public ActionResult<Topic> Post(Topic topic)
         {
             if (topic.Title == null || topic.Category == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
-            var category = _dbContext.Categories.SingleOrDefault(entity => entity.Id == topic.Category.Id);
+            var category = _categoriesRepository.GetByID(topic.Category.Id);
             if (category == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
@@ -40,39 +41,22 @@ namespace ForumMCBackend.Controllers
                 topic.Category = category;
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                topic.CreatedBy = requestFrom;
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
+            topic.CreatedBy = requestFrom;
 
-            _dbContext.Topics.Add(topic);
-            _dbContext.SaveChanges();
-            topic.CreatedBy.Password = null;
-            return new ObjectResult(topic) { StatusCode = StatusCodes.Status201Created };
+            var result = _topicsRepository.Add(topic);
+            result.CreatedBy.Password = null;
+            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpGet]
-        public ActionResult<List<Topic>> GetLatestTenTopics([FromHeader] string? authorization)
+        public ActionResult<List<Topic>> GetLatestTenTopics()
         {
-            var listOfTopics = _dbContext.Topics.Include(topic => topic.CreatedBy)
-                .OrderByDescending(topic => topic.CreatedAt)
-                .Take(10)
-                .ToList();
+            var listOfTopics = _topicsRepository.GetLatestTenTopics();
 
-            var requestFrom = new Account();
-            if (authorization != null)
-            {
-                if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-                }
-                requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
 
             var topics = new List<Topic>();
 
@@ -95,50 +79,33 @@ namespace ForumMCBackend.Controllers
 
         [Authorize]
         [HttpPatch]
-        public ActionResult<Topic> PatchTopic([FromHeader] string authorization, Topic topic)
+        public ActionResult<Topic> PatchTopic(Topic topic)
         {
-            var dbTopic = _dbContext.Topics.SingleOrDefault(entity => entity.Id == topic.Id);
+            var dbTopic = _topicsRepository.GetByID(topic.Id);
             if (dbTopic == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
+            if (requestFrom.Role != AccountRoles.ADMIN && requestFrom.Role != AccountRoles.MODERATOR)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                if (requestFrom.Role != AccountRoles.ADMIN && requestFrom.Role != AccountRoles.MODERATOR)
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
-                }
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
-            dbTopic.IsHidden = topic.IsHidden;
-            _dbContext.SaveChanges();
+            var result = _topicsRepository.Patch(topic);
 
-            return new ObjectResult(dbTopic);
+            return new ObjectResult(result);
         }
 
         [HttpGet("{topicId}/messages")]
-        public ActionResult<List<Message>> GetTopicMessages([FromHeader] string? authorization, int topicId)
+        public ActionResult<List<Message>> GetTopicMessages(int topicId)
         {
-            var messagesOfTopic = _dbContext.Messages.Include(message => message.CreatedBy)
-               .Include(message => message.Topic)
-                .Where(e => (e.Topic.Id == topicId) && (e.InReplyTo == null))
-                .ToList();
+            var messagesOfTopic = _messagesRepository.GetByTopicID(topicId);
 
-            var requestFrom = new Account();
-            if (authorization != null)
-            {
-                if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-                }
-                requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
 
             var messages = new List<Message>();
             var now = DateTime.UtcNow;

@@ -1,10 +1,7 @@
-﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
+﻿using ForumMCBackend.Models;
+using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
-using ForumMCBackend.Utils;
-using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Controllers
 {
@@ -12,25 +9,28 @@ namespace ForumMCBackend.Controllers
     [Route("[controller]")]
     public class MessagesController : ControllerBase
     {
-        private readonly ILogger<MessagesController> _logger;
-        private readonly SQLiteContext _dbContext;
+        private readonly IMessagesRepository _messagesRepository;
+        private readonly ITopicsRepository _topicsRepository;
+        private readonly IAccountsRepository _accountsRepository;
 
-        public MessagesController(ILogger<MessagesController> logger, SQLiteContext dbContext)
+        public MessagesController(IMessagesRepository messagesRepository, ITopicsRepository topicsRepository, IAccountsRepository accountsRepository)
         {
-            _logger = logger;
-            _dbContext = dbContext;
+            _messagesRepository = messagesRepository;
+            _topicsRepository = topicsRepository;
+            _accountsRepository = accountsRepository;
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult<Message> Post([FromHeader] string authorization, Message message)
+        public ActionResult<Message> Post(Message message)
         {
             if (message.BodyText == null || message.Topic == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
-            var Topic = _dbContext.Topics.SingleOrDefault(entity => entity.Id == message.Topic.Id);
+            var Topic = _topicsRepository.GetByID(message.Topic.Id);
+
             if (Topic == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
@@ -42,7 +42,7 @@ namespace ForumMCBackend.Controllers
 
             if (message.InReplyTo != null)
             {
-                var InReplyTo = _dbContext.Messages.Include(message => message.InReplyTo).SingleOrDefault(entity => entity.Id == message.InReplyTo.Id);
+                var InReplyTo = _messagesRepository.GetByID(message.InReplyTo.Id);
 
                 if (InReplyTo == null)
                 {
@@ -59,40 +59,22 @@ namespace ForumMCBackend.Controllers
                 }
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                message.CreatedBy = requestFrom;
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
+            message.CreatedBy = requestFrom;
 
-            _dbContext.Messages.Add(message);
-            _dbContext.SaveChanges();
-            message.CreatedBy.Password = null;
-            return new ObjectResult(message) { StatusCode = StatusCodes.Status201Created };
+            var result = _messagesRepository.Add(message);
+            result.CreatedBy.Password = null;
+            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpGet("{messageId}/replies")]
-        public ActionResult<List<Message>> GetMessageReplies([FromHeader] string? authorization, int messageId)
+        public ActionResult<List<Message>> GetMessageReplies(int messageId)
         {
-            var repliesToMessage = _dbContext.Messages.Include(message => message.CreatedBy)
-                .Include(message => message.Topic)
-                .Where(e => e.InReplyTo.Id == messageId)
-                .ToList();
+            var repliesToMessage = _messagesRepository.GetReplies(messageId);
 
-            Account requestFrom = new();
-            if (authorization != null)
-            {
-                if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-                }
-
-                requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
 
             var messages = new List<Message>();
             var now = DateTime.UtcNow;
@@ -123,31 +105,24 @@ namespace ForumMCBackend.Controllers
 
         [Authorize]
         [HttpPatch]
-        public ActionResult<Message> PatchMessage([FromHeader] string authorization, Message message)
+        public ActionResult<Message> PatchMessage(Message message)
         {
-            var dbMessage = _dbContext.Messages.SingleOrDefault(entity => entity.Id == message.Id);
+            var dbMessage = _messagesRepository.GetByID(message.Id);
             if (dbMessage == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
+            if (requestFrom.Role != AccountRoles.ADMIN && requestFrom.Role != AccountRoles.MODERATOR)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                if (requestFrom.Role != AccountRoles.ADMIN && requestFrom.Role != AccountRoles.MODERATOR)
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
-                }
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
-            dbMessage.IsHidden = message.IsHidden;
-            _dbContext.SaveChanges();
+            var result = _messagesRepository.Patch(message);
 
-            return dbMessage;
+            return new ObjectResult(result);
         }
     }
 }

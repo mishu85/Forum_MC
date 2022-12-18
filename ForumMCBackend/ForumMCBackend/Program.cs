@@ -34,12 +34,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<SQLiteContext>();
-
 builder.Services.AddScoped<SQLiteCategoriesRepository>();
 builder.Services.AddScoped<ICategoriesRepository>(x => x.GetRequiredService<SQLiteCategoriesRepository>());
 builder.Services.AddScoped<SQLiteAccountsRepository>();
 builder.Services.AddScoped<IAccountsRepository>(x => x.GetRequiredService<SQLiteAccountsRepository>());
+builder.Services.AddScoped<SQLiteMessagesRepository>();
+builder.Services.AddScoped<IMessagesRepository>(x => x.GetRequiredService<SQLiteMessagesRepository>());
+builder.Services.AddScoped<SQLiteTopicsRepository>();
+builder.Services.AddScoped<ITopicsRepository>(x => x.GetRequiredService<SQLiteTopicsRepository>());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

@@ -1,11 +1,6 @@
-﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
-using ForumMCBackend.Utils;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
-using Microsoft.EntityFrameworkCore;
+﻿using ForumMCBackend.Models;
 using ForumMCBackend.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ForumMCBackend.Controllers
 {
@@ -13,40 +8,31 @@ namespace ForumMCBackend.Controllers
     [Route("[controller]")]
     public class CategoriesController : ControllerBase
     {
-        private readonly ILogger<CategoriesController> _logger;
-        private readonly SQLiteContext _dbContext;
         private readonly ICategoriesRepository _categoriesRepository;
+        private readonly IAccountsRepository _accountsRepository;
+        private readonly ITopicsRepository _topicsRepository;
 
-        public CategoriesController(ILogger<CategoriesController> logger, SQLiteContext dbContext, ICategoriesRepository categoriesRepository)
+        public CategoriesController(ICategoriesRepository categoriesRepository, IAccountsRepository accountsRepository, ITopicsRepository topicsRepository)
         {
-            _logger = logger;
-            _dbContext = dbContext;
             _categoriesRepository = categoriesRepository;
+            _accountsRepository = accountsRepository;
+            _topicsRepository = topicsRepository;
         }
 
         [HttpGet]
         public ActionResult<List<Category>> Get()
         {
-            var categories = _categoriesRepository.getAll();
+            var categories = _categoriesRepository.GetAll();
             return categories;
         }
 
         [HttpGet("{id}/topics")]
-        public ActionResult<List<Topic>> GetTopics([FromHeader] string? authorization, int id)
+        public ActionResult<List<Topic>> GetTopics(int id)
         {
-            var listOfTopics = _dbContext.Topics.Include(topic => topic.CreatedBy)
-                .Where(topic => topic.Category.Id == id)
-               .ToList();
+            var listOfTopics = _topicsRepository.GetByCategoryID(id);
 
-            var requestFrom = new Account();
-            if (authorization != null)
-            {
-                if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-                }
-                requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-            }
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
 
             var topics = new List<Topic>();
 

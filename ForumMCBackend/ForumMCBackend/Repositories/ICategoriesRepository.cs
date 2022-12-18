@@ -4,6 +4,8 @@ namespace ForumMCBackend.Repositories
 {
     public interface ICategoriesRepository
     {
-        List<Category> getAll();
+        List<Category> GetAll();
+
+        Category? GetByID(int id);
     }
 }

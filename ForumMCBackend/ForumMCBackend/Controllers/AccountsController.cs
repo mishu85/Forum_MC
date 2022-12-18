@@ -1,12 +1,9 @@
-﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
+﻿using ForumMCBackend.Models;
 using ForumMCBackend.Repositories;
-using ForumMCBackend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 
@@ -16,15 +13,11 @@ namespace ForumMCBackend.Controllers
     [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        private readonly ILogger<AccountsController> _logger;
-        private readonly SQLiteContext _dbContext;
-        public IConfiguration _configuration;
-        private IAccountsRepository _accountsRepository;
+        private readonly IConfiguration _configuration;
+        private readonly IAccountsRepository _accountsRepository;
 
-        public AccountsController(ILogger<AccountsController> logger, IConfiguration config, SQLiteContext dbContext, IAccountsRepository accountsRepository)
+        public AccountsController(IConfiguration config, IAccountsRepository accountsRepository)
         {
-            _logger = logger;
-            _dbContext = dbContext;
             _configuration = config;
             _accountsRepository = accountsRepository;
         }
@@ -32,7 +25,8 @@ namespace ForumMCBackend.Controllers
         [HttpPost("login")]
         public ActionResult<string> Login(Account request)
         {
-            var account = _dbContext.Accounts.SingleOrDefault(entity => entity.UserName == request.UserName);
+            var account = _accountsRepository.GetByUserName(request.UserName);
+
             if (account == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
@@ -65,7 +59,7 @@ namespace ForumMCBackend.Controllers
         [HttpPost("register")]
         public ActionResult<Account> Register(Account account)
         {
-            var existingAccount = _dbContext.Accounts.SingleOrDefault(entity => entity.UserName == account.UserName);
+            var existingAccount = _accountsRepository.GetByUserName(account.UserName);
             if (existingAccount != null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
@@ -73,10 +67,9 @@ namespace ForumMCBackend.Controllers
 
             account.Password = BCrypt.Net.BCrypt.HashPassword(account.Password);
             account.Role = AccountRoles.USER;
-            _dbContext.Accounts.Add(account);
-            _dbContext.SaveChanges();
-            account.Password = null;
-            return new ObjectResult(account) { StatusCode = StatusCodes.Status201Created };
+            var result = _accountsRepository.Add(account);
+            result.Password = null;
+            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
         }
 
         [Authorize]
@@ -84,49 +77,42 @@ namespace ForumMCBackend.Controllers
         public ActionResult<List<Account>> Get()
         {
             var requestFromId = HttpContext.User.Identity?.Name ?? "0";
-            var requestFrom = _accountsRepository.getByID(int.Parse(requestFromId));
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
 
             if (requestFrom?.Role != AccountRoles.ADMIN)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
-            var accounts = _accountsRepository.getAll();
+            var accounts = _accountsRepository.GetAll();
             return accounts;
         }
 
         [Authorize]
         [HttpPatch]
-        public ActionResult<Account> Patch([FromHeader] string authorization, Account account)
+        public ActionResult<Account> Patch(Account account)
         {
-            var dbAccount = _dbContext.Accounts.SingleOrDefault(entity => entity.Id == account.Id);
+            var dbAccount = _accountsRepository.GetByID(account.Id);
             if (dbAccount == null)
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
             }
 
-            if (!Enum.IsDefined(typeof(AccountRoles), account.Role)) 
+            if (!Enum.IsDefined(typeof(AccountRoles), account.Role))
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
+            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
+            if (requestFrom.Role != AccountRoles.ADMIN)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status500InternalServerError };
-            }
-            else
-            {
-                var requestFrom = AuthenticationUtils.GetAccountFromToken(headerValue.Parameter, _dbContext);
-                if (requestFrom.Role != AccountRoles.ADMIN)
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
-                }
+                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
-            dbAccount.Role = account.Role;
-            _dbContext.SaveChanges();
+            var result = _accountsRepository.Patch(account);
 
-            return new ObjectResult(dbAccount);
+            return new ObjectResult(result);
         }
     }
 }

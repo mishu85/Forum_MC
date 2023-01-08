@@ -81,7 +81,7 @@ namespace ForumMCBackend.Controllers
             return accounts;
         }
 
-        [Authorize]
+        [Authorize(Roles = "ADMIN")]
         [HttpPatch]
         public ActionResult<Account> Patch(Account account)
         {
@@ -94,13 +94,6 @@ namespace ForumMCBackend.Controllers
             if (!Enum.IsDefined(typeof(AccountRoles), account.Role))
             {
                 return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
-
-            var requestFromId = HttpContext.User.Identity?.Name ?? "0";
-            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId)) ?? new Account();
-            if (requestFrom.Role != AccountRoles.ADMIN)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status401Unauthorized };
             }
 
             var result = _accountsRepository.Patch(account);

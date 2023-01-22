@@ -6,7 +6,7 @@ namespace ForumMCBackend.Repositories
 {
     public class SQLiteMessagesRepository : IMessagesRepository
     {
-        readonly SQLiteContext _context = new();
+        readonly SQLiteContext _context = SQLiteContext.Default;
 
         public Message? Add(Message message)
         {

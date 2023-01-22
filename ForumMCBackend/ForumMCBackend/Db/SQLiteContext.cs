@@ -5,6 +5,8 @@ namespace ForumMCBackend.Db
 {
     public class SQLiteContext : DbContext
     {
+        public static readonly SQLiteContext Default = new SQLiteContext();
+
         public DbSet<Account>? Accounts { get; set; }
         public DbSet<Category>? Categories { get; set; }
         public DbSet<Topic>? Topics { get; set; }

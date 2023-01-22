@@ -5,7 +5,7 @@ namespace ForumMCBackend.Repositories
 {
     public class SQLiteAccountsRepository : IAccountsRepository
     {
-        readonly SQLiteContext _context = new();
+        readonly SQLiteContext _context = SQLiteContext.Default;
 
         public Account? Add(Account account)
         {

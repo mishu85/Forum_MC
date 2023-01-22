@@ -6,7 +6,7 @@ namespace ForumMCBackend.Repositories
 {
     public class SQLiteTopicsRepository : ITopicsRepository
     {
-        readonly SQLiteContext _context = new();
+        readonly SQLiteContext _context = SQLiteContext.Default;
 
         public Topic? Add(Topic topic)
         {

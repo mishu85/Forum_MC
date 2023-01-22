@@ -5,7 +5,7 @@ namespace ForumMCBackend.Repositories
 {
     public class SQLiteCategoriesRepository : ICategoriesRepository
     {
-        readonly SQLiteContext _context = new();
+        readonly SQLiteContext _context = SQLiteContext.Default;
 
         public List<Category> GetAll()
         {

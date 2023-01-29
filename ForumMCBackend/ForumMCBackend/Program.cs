@@ -1,5 +1,7 @@
+using AutoMapper;
 using ForumMCBackend.Db;
 using ForumMCBackend.Models;
+using ForumMCBackend.Models.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +35,14 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var mapper = new MapperConfiguration((cfg) => {
+        cfg.CreateMap<Account, AccountDTO>();
+        cfg.CreateMap<Topic, TopicDTO>();
+        cfg.CreateMap<Message, MessageDTO>();
+    }).CreateMapper();
+
+builder.Services.AddSingleton<IMapper>(mapper);
 
 builder.Services.AddScoped<SQLiteCategoriesRepository>();
 builder.Services.AddScoped<ICategoriesRepository>(x => x.GetRequiredService<SQLiteCategoriesRepository>());

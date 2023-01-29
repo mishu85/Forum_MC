@@ -1,4 +1,5 @@
 ﻿using ForumMCBackend.Models;
+using ForumMCBackend.Models.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,7 +59,7 @@ namespace ForumMCBackend.Controllers
         }
 
         [HttpPost("register")]
-        public ActionResult<Account> Register(Account account)
+        public ActionResult<AccountDTO> Register(Account account)
         {
             var existingAccount = _accountsRepository.GetByUserName(account.UserName);
             if (existingAccount != null)
@@ -69,21 +70,32 @@ namespace ForumMCBackend.Controllers
             account.Password = BCrypt.Net.BCrypt.HashPassword(account.Password);
             account.Role = AccountRoles.USER;
             var result = _accountsRepository.Add(account);
-            result.Password = null;
-            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
+            return new ObjectResult(
+                    new AccountDTO { 
+                        Id = result.Id,
+                        UserName = result.UserName,
+                        Role = result.Role,
+                    }
+                ) { StatusCode = StatusCodes.Status201Created };
         }
 
         [Authorize(Roles = "ADMIN")]
         [HttpGet]
-        public ActionResult<List<Account>> Get()
+        public ActionResult<List<AccountDTO>> Get()
         {
-            var accounts = _accountsRepository.GetAll();
+            var accounts = _accountsRepository.GetAll().Select((account) => new AccountDTO {
+                Id = account.Id,
+                UserName = account.UserName,
+                Role = account.Role,
+                CreatedAt = account.CreatedAt,
+                UpdatedAt = account.UpdatedAt,
+            }).ToList();
             return accounts;
         }
 
         [Authorize(Roles = "ADMIN")]
         [HttpPatch]
-        public ActionResult<Account> Patch(Account account)
+        public ActionResult<AccountDTO> Patch(Account account)
         {
             var dbAccount = _accountsRepository.GetByID(account.Id);
             if (dbAccount == null)
@@ -98,7 +110,16 @@ namespace ForumMCBackend.Controllers
 
             var result = _accountsRepository.Patch(account);
 
-            return new ObjectResult(result);
+            return new ObjectResult(
+                    new AccountDTO
+                    {
+                        Id = result.Id,
+                        UserName = result.UserName,
+                        Role = result.Role,
+                        CreatedAt = result.CreatedAt,
+                        UpdatedAt = result.UpdatedAt,
+                    }
+                );
         }
     }
 }

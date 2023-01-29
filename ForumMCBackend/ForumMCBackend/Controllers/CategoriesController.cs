@@ -1,4 +1,5 @@
 ﻿using ForumMCBackend.Models;
+using ForumMCBackend.Models.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,10 +26,23 @@ namespace ForumMCBackend.Controllers
         }
 
         [HttpGet("{id}/topics")]
-        public ActionResult<List<Topic>> GetTopics(int id)
+        public ActionResult<List<TopicDTO>> GetTopics(int id)
         {
-            var listOfTopics = _topicsRepository.GetByCategoryID(id);
-            var topics = new List<Topic>();
+            var listOfTopics = _topicsRepository.GetByCategoryID(id).Select((topic) =>
+                new TopicDTO {
+                    Id = topic.Id,
+                    Title = topic.Title,
+                    CreatedBy = new AccountDTO
+                    {
+                        Id = topic.CreatedBy.Id,
+                        UserName = topic.CreatedBy.UserName,
+                        Role = topic.CreatedBy.Role
+                    },
+                    Category = topic.Category,
+                    IsHidden = topic.IsHidden
+                }
+            );
+            var topics = new List<TopicDTO>();
 
             foreach (var dbTopic in listOfTopics)
             {

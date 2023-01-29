@@ -1,4 +1,6 @@
-﻿using ForumMCBackend.Models;
+﻿using AutoMapper;
+using ForumMCBackend.Models;
+using ForumMCBackend.Models.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,17 +14,19 @@ namespace ForumMCBackend.Controllers
         private readonly IMessagesRepository _messagesRepository;
         private readonly ITopicsRepository _topicsRepository;
         private readonly IAccountsRepository _accountsRepository;
+        private readonly IMapper _mapper;
 
-        public MessagesController(IMessagesRepository messagesRepository, ITopicsRepository topicsRepository, IAccountsRepository accountsRepository)
+        public MessagesController(IMessagesRepository messagesRepository, ITopicsRepository topicsRepository, IAccountsRepository accountsRepository, IMapper mapper)
         {
             _messagesRepository = messagesRepository;
             _topicsRepository = topicsRepository;
             _accountsRepository = accountsRepository;
+            _mapper = mapper;
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult<Message> Post(Message message)
+        public ActionResult<MessageDTO> Post(Message message)
         {
             if (message.BodyText == null || message.Topic == null)
             {
@@ -64,8 +68,7 @@ namespace ForumMCBackend.Controllers
             message.CreatedBy = requestFrom;
 
             var result = _messagesRepository.Add(message);
-            result.CreatedBy.Password = null;
-            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
+            return new ObjectResult(_mapper.Map<MessageDTO>(result)) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpGet("{messageId}/replies")]

@@ -1,4 +1,5 @@
-﻿using ForumMCBackend.Models;
+﻿
+using ApplicationCore.Entities;
 
 namespace ForumMCBackend.Repositories
 {

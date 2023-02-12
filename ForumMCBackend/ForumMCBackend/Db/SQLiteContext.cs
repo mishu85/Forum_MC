@@ -1,16 +1,17 @@
-﻿using ForumMCBackend.Models;
+﻿using ApplicationCore.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Db
 {
     public class SQLiteContext : DbContext
     {
-        public static readonly SQLiteContext Default = new SQLiteContext();
+        #pragma warning disable CS8618 // Required by Entity Framework
+        public static readonly SQLiteContext Default = new();
 
-        public DbSet<Account>? Accounts { get; set; }
-        public DbSet<Category>? Categories { get; set; }
-        public DbSet<Topic>? Topics { get; set; }
-        public DbSet<Message>? Messages { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Topic> Topics { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)

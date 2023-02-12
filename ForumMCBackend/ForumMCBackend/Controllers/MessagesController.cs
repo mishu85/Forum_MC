@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using ForumMCBackend.Models;
-using ForumMCBackend.Models.DTOs;
+using ApplicationCore.Entities;
+using ApplicationCore.Entities.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ardalis.GuardClauses;
 
 namespace ForumMCBackend.Controllers
 {
@@ -13,14 +14,12 @@ namespace ForumMCBackend.Controllers
     {
         private readonly IMessagesRepository _messagesRepository;
         private readonly ITopicsRepository _topicsRepository;
-        private readonly IAccountsRepository _accountsRepository;
         private readonly IMapper _mapper;
 
-        public MessagesController(IMessagesRepository messagesRepository, ITopicsRepository topicsRepository, IAccountsRepository accountsRepository, IMapper mapper)
+        public MessagesController(IMessagesRepository messagesRepository, ITopicsRepository topicsRepository, IMapper mapper)
         {
             _messagesRepository = messagesRepository;
             _topicsRepository = topicsRepository;
-            _accountsRepository = accountsRepository;
             _mapper = mapper;
         }
 
@@ -28,73 +27,47 @@ namespace ForumMCBackend.Controllers
         [HttpPost]
         public ActionResult<MessageDTO> Post(Message message)
         {
-            if (message.BodyText == null || message.Topic == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
+            var topic = _topicsRepository.GetByID(message.TopicId);
+            Guard.Against.Null(topic, nameof(topic));
 
-            var Topic = _topicsRepository.GetByID(message.Topic.Id);
-
-            if (Topic == null)
+            if (message.InReplyToId != null)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
-            else
-            {
-                message.Topic = Topic;
-            }
-
-            if (message.InReplyTo != null)
-            {
-                var InReplyTo = _messagesRepository.GetByID(message.InReplyTo.Id);
-
-                if (InReplyTo == null)
-                {
-                    return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-                }
-                else
-                {
-                    if (InReplyTo.InReplyTo != null)
-                    {
-                        // no replies to replies
-                        return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-                    }
-                    message.InReplyTo = InReplyTo;
-                }
+                var inReplyTo = _messagesRepository.GetByID(message.InReplyToId ?? 0);
+                Guard.Against.Null(inReplyTo, nameof(inReplyTo));
+                Guard.Against.NoRepliesToReplies(inReplyTo);
             }
 
             var requestFromId = HttpContext.User.Identity?.Name ?? "0";
-            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
-            message.CreatedBy = requestFrom;
+            message.UpdateCreatedBy(int.Parse(requestFromId));
 
             var result = _messagesRepository.Add(message);
             return new ObjectResult(_mapper.Map<MessageDTO>(result)) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpGet("{messageId}/replies")]
-        public ActionResult<List<Message>> GetMessageReplies(int messageId)
+        public ActionResult<List<MessageDTO>> GetMessageReplies(int messageId)
         {
             var repliesToMessage = _messagesRepository.GetReplies(messageId);
             var requestFromId = HttpContext.User.Identity?.Name ?? "0";
 
-            var messages = new List<Message>();
+            var messages = new List<MessageDTO>();
             var now = DateTime.UtcNow;
             foreach (var message in repliesToMessage)
             {
                 if (Account.IsInRoles(HttpContext.User, new List<AccountRoles> { AccountRoles.ADMIN, AccountRoles.MODERATOR }) ||
-                    message.CreatedBy.Id == int.Parse(requestFromId))
+                    message.CreatedById== int.Parse(requestFromId))
                 {
-                    messages.Add(message);
+                    messages.Add(_mapper.Map<MessageDTO>(message));
                 }
                 else
                 {
                     if (message.IsHidden)
                     {
-                        message.BodyText = "";
+                        message.UpdateBodyText("");
                     }
                     if (now > message.GoesLive)
                     {
-                        messages.Add(message);
+                        messages.Add(_mapper.Map<MessageDTO>(message));
                     }
                 }
             }
@@ -105,13 +78,10 @@ namespace ForumMCBackend.Controllers
 
         [Authorize(Roles = "ADMIN,MODERATOR")]
         [HttpPatch]
-        public ActionResult<Message> PatchMessage(Message message)
+        public ActionResult<MessageDTO> PatchMessage(Message message)
         {
             var dbMessage = _messagesRepository.GetByID(message.Id);
-            if (dbMessage == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
-            }
+            Guard.Against.Null(dbMessage, nameof(dbMessage));
 
             var result = _messagesRepository.Patch(message);
 

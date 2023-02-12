@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ForumMCBackend.Db
+namespace ApplicationCore.Entities
 {
     public class BaseEntity
     {

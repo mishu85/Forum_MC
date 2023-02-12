@@ -1,5 +1,5 @@
 ﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
+using ApplicationCore.Entities;
 
 namespace ForumMCBackend.Repositories
 {
@@ -37,7 +37,7 @@ namespace ForumMCBackend.Repositories
         {
             var dbAccount = GetByID(account.Id);
             if (dbAccount == null) return null;
-            dbAccount.Role = account.Role;
+            dbAccount.UpdateRole(account.Role);
             _context.SaveChanges();
             return dbAccount;
         }

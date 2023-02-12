@@ -1,11 +1,12 @@
 using AutoMapper;
 using ForumMCBackend.Db;
-using ForumMCBackend.Models;
-using ForumMCBackend.Models.DTOs;
+using ApplicationCore.Entities;
+using ApplicationCore.Entities.DTOs;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ForumMCBackend.Middleware;
 
 using (var context = new SQLiteContext())
 {
@@ -13,15 +14,15 @@ using (var context = new SQLiteContext())
     if (dbCreated)
     {
         context.Accounts.Add(new Account
-        {
-            UserName = "Admin",
-            Password = BCrypt.Net.BCrypt.HashPassword("Admin"),
-            Role = AccountRoles.ADMIN,
-        });
+        (
+            "Admin",
+            BCrypt.Net.BCrypt.HashPassword("Admin"),
+            AccountRoles.ADMIN
+        ));
 
-        context.Categories.Add(new Category { Title = "Cars" });
-        context.Categories.Add(new Category { Title = "Space" });
-        context.Categories.Add(new Category { Title = "Cooking" });
+        context.Categories.Add(new Category("Cars"));
+        context.Categories.Add(new Category("Space"));
+        context.Categories.Add(new Category("Cooking"));
 
         context.SaveChanges();
     }
@@ -44,14 +45,10 @@ var mapper = new MapperConfiguration((cfg) => {
 
 builder.Services.AddSingleton<IMapper>(mapper);
 
-builder.Services.AddScoped<SQLiteCategoriesRepository>();
-builder.Services.AddScoped<ICategoriesRepository>(x => x.GetRequiredService<SQLiteCategoriesRepository>());
-builder.Services.AddScoped<SQLiteAccountsRepository>();
-builder.Services.AddScoped<IAccountsRepository>(x => x.GetRequiredService<SQLiteAccountsRepository>());
-builder.Services.AddScoped<SQLiteMessagesRepository>();
-builder.Services.AddScoped<IMessagesRepository>(x => x.GetRequiredService<SQLiteMessagesRepository>());
-builder.Services.AddScoped<SQLiteTopicsRepository>();
-builder.Services.AddScoped<ITopicsRepository>(x => x.GetRequiredService<SQLiteTopicsRepository>());
+builder.Services.AddScoped<ICategoriesRepository, SQLiteCategoriesRepository>();
+builder.Services.AddScoped<IAccountsRepository, SQLiteAccountsRepository>();
+builder.Services.AddScoped<IMessagesRepository, SQLiteMessagesRepository>();
+builder.Services.AddScoped<ITopicsRepository, SQLiteTopicsRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -77,6 +74,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UsePathBase(new PathString("/api"));
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseRouting();
 
 app.UseAuthentication();

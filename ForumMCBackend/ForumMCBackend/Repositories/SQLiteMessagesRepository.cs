@@ -1,5 +1,5 @@
 ﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
+using ApplicationCore.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Repositories
@@ -43,7 +43,7 @@ namespace ForumMCBackend.Repositories
         {
             var dbMessage = GetByID(message.Id);
             if (dbMessage == null) return null;
-            dbMessage.IsHidden = message.IsHidden;
+            dbMessage.UpdateIsHidden(message.IsHidden);
             _context.SaveChanges();
             return dbMessage;
         }

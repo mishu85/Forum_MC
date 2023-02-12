@@ -1,5 +1,6 @@
-﻿using ForumMCBackend.Models;
-using ForumMCBackend.Models.DTOs;
+﻿using ApplicationCore.Entities;
+using ApplicationCore.Entities.DTOs;
+using AutoMapper;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +12,13 @@ namespace ForumMCBackend.Controllers
     {
         private readonly ICategoriesRepository _categoriesRepository;
         private readonly ITopicsRepository _topicsRepository;
+        private readonly IMapper _mapper;
 
-        public CategoriesController(ICategoriesRepository categoriesRepository, ITopicsRepository topicsRepository)
+        public CategoriesController(ICategoriesRepository categoriesRepository, ITopicsRepository topicsRepository, IMapper mapper)
         {
             _categoriesRepository = categoriesRepository;
             _topicsRepository = topicsRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -29,18 +32,7 @@ namespace ForumMCBackend.Controllers
         public ActionResult<List<TopicDTO>> GetTopics(int id)
         {
             var listOfTopics = _topicsRepository.GetByCategoryID(id).Select((topic) =>
-                new TopicDTO {
-                    Id = topic.Id,
-                    Title = topic.Title,
-                    CreatedBy = new AccountDTO
-                    {
-                        Id = topic.CreatedBy.Id,
-                        UserName = topic.CreatedBy.UserName,
-                        Role = topic.CreatedBy.Role
-                    },
-                    Category = topic.Category,
-                    IsHidden = topic.IsHidden
-                }
+                _mapper.Map<TopicDTO>(topic)
             );
             var topics = new List<TopicDTO>();
 

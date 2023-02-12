@@ -1,5 +1,5 @@
 ﻿using ForumMCBackend.Db;
-using ForumMCBackend.Models;
+using ApplicationCore.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForumMCBackend.Repositories
@@ -42,7 +42,7 @@ namespace ForumMCBackend.Repositories
         {
             var dbTopic = GetByID(topic.Id);
             if (dbTopic == null) return null;
-            dbTopic.IsHidden = topic.IsHidden;
+            dbTopic.UpdateIsHidden(topic.IsHidden);
             _context.SaveChanges();
             return dbTopic;
         }

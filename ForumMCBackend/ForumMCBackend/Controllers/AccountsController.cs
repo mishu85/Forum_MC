@@ -1,5 +1,7 @@
-﻿using ForumMCBackend.Models;
-using ForumMCBackend.Models.DTOs;
+﻿using ApplicationCore.Entities;
+using ApplicationCore.Entities.DTOs;
+using ApplicationCore.Exeptions;
+using AutoMapper;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +18,13 @@ namespace ForumMCBackend.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IAccountsRepository _accountsRepository;
+        private readonly IMapper _mapper;
 
-        public AccountsController(IConfiguration config, IAccountsRepository accountsRepository)
+        public AccountsController(IConfiguration config, IAccountsRepository accountsRepository, IMapper mapper)
         {
             _configuration = config;
             _accountsRepository = accountsRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
@@ -64,32 +68,24 @@ namespace ForumMCBackend.Controllers
             var existingAccount = _accountsRepository.GetByUserName(account.UserName);
             if (existingAccount != null)
             {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
+                throw new DuplicateException($"An account with username {account.UserName} already exists");
             }
 
             account.Password = BCrypt.Net.BCrypt.HashPassword(account.Password);
-            account.Role = AccountRoles.USER;
+            
             var result = _accountsRepository.Add(account);
             return new ObjectResult(
-                    new AccountDTO { 
-                        Id = result.Id,
-                        UserName = result.UserName,
-                        Role = result.Role,
-                    }
-                ) { StatusCode = StatusCodes.Status201Created };
+                _mapper.Map<AccountDTO>(result)
+            ) { StatusCode = StatusCodes.Status201Created };
         }
 
         [Authorize(Roles = "ADMIN")]
         [HttpGet]
         public ActionResult<List<AccountDTO>> Get()
         {
-            var accounts = _accountsRepository.GetAll().Select((account) => new AccountDTO {
-                Id = account.Id,
-                UserName = account.UserName,
-                Role = account.Role,
-                CreatedAt = account.CreatedAt,
-                UpdatedAt = account.UpdatedAt,
-            }).ToList();
+            var accounts = _accountsRepository.GetAll().Select((account) =>
+                _mapper.Map<AccountDTO>(account)
+            ).ToList();
             return accounts;
         }
 
@@ -97,29 +93,8 @@ namespace ForumMCBackend.Controllers
         [HttpPatch]
         public ActionResult<AccountDTO> Patch(Account account)
         {
-            var dbAccount = _accountsRepository.GetByID(account.Id);
-            if (dbAccount == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
-            }
-
-            if (!Enum.IsDefined(typeof(AccountRoles), account.Role))
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
-
             var result = _accountsRepository.Patch(account);
-
-            return new ObjectResult(
-                    new AccountDTO
-                    {
-                        Id = result.Id,
-                        UserName = result.UserName,
-                        Role = result.Role,
-                        CreatedAt = result.CreatedAt,
-                        UpdatedAt = result.UpdatedAt,
-                    }
-                );
+            return new ObjectResult(_mapper.Map<AccountDTO>(result));
         }
     }
 }

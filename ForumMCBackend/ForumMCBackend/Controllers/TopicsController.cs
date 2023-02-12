@@ -1,4 +1,7 @@
-﻿using ForumMCBackend.Models;
+﻿using ApplicationCore.Entities;
+using ApplicationCore.Entities.DTOs;
+using Ardalis.GuardClauses;
+using AutoMapper;
 using ForumMCBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,62 +13,48 @@ namespace ForumMCBackend.Controllers
     public class TopicsController : ControllerBase
     {
         private readonly ICategoriesRepository _categoriesRepository;
-        private readonly IAccountsRepository _accountsRepository;
         private readonly ITopicsRepository _topicsRepository;
         private readonly IMessagesRepository _messagesRepository;
+        private readonly IMapper _mapper;
 
-        public TopicsController(ICategoriesRepository categoriesRepository, IAccountsRepository accountsRepository, ITopicsRepository topicsRepository, IMessagesRepository messagesRepository)
+        public TopicsController(ICategoriesRepository categoriesRepository, ITopicsRepository topicsRepository, IMessagesRepository messagesRepository, IMapper mapper)
         {
             _categoriesRepository = categoriesRepository;
-            _accountsRepository = accountsRepository;
             _topicsRepository = topicsRepository;
             _messagesRepository = messagesRepository;
+            _mapper = mapper;
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult<Topic> Post(Topic topic)
+        public ActionResult<TopicDTO> Post(Topic topic)
         {
-            if (topic.Title == null || topic.Category == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
-
-            var category = _categoriesRepository.GetByID(topic.Category.Id);
-            if (category == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest };
-            }
-            else
-            {
-                topic.Category = category;
-            }
+            var category = _categoriesRepository.GetByID(topic.CategoryId);
+            Guard.Against.Null(category, nameof(category));
 
             var requestFromId = HttpContext.User.Identity?.Name ?? "0";
-            var requestFrom = _accountsRepository.GetByID(int.Parse(requestFromId));
-            topic.CreatedBy = requestFrom;
+            topic.UpdateCreatedBy(int.Parse(requestFromId));
 
             var result = _topicsRepository.Add(topic);
-            result.CreatedBy.Password = null;
-            return new ObjectResult(result) { StatusCode = StatusCodes.Status201Created };
+            return new ObjectResult(_mapper.Map<TopicDTO>(result)) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpGet]
-        public ActionResult<List<Topic>> GetLatestTenTopics()
+        public ActionResult<List<TopicDTO>> GetLatestTenTopics()
         {
             var listOfTopics = _topicsRepository.GetLatestTenTopics();
-            var topics = new List<Topic>();
+            var topics = new List<TopicDTO>();
 
             foreach (var dbTopic in listOfTopics)
             {
                 if (dbTopic.IsHidden &&
                     Account.IsInRoles(HttpContext.User, new List<AccountRoles> { AccountRoles.ADMIN, AccountRoles.MODERATOR }))
                 {
-                    topics.Add(dbTopic);
+                    topics.Add(_mapper.Map<TopicDTO>(dbTopic));
                 }
                 else if (!dbTopic.IsHidden)
                 {
-                    topics.Add(dbTopic);
+                    topics.Add(_mapper.Map<TopicDTO>(dbTopic));
                 }
             }
 
@@ -74,48 +63,40 @@ namespace ForumMCBackend.Controllers
 
         [Authorize(Roles = "ADMIN,MODERATOR")]
         [HttpPatch]
-        public ActionResult<Topic> PatchTopic(Topic topic)
+        public ActionResult<TopicDTO> PatchTopic(Topic topic)
         {
             var dbTopic = _topicsRepository.GetByID(topic.Id);
-            if (dbTopic == null)
-            {
-                return new ObjectResult(null) { StatusCode = StatusCodes.Status404NotFound };
-            }
+            Guard.Against.Null(dbTopic, nameof(dbTopic));
 
             var result = _topicsRepository.Patch(topic);
 
-            return new ObjectResult(result);
+            return new ObjectResult(_mapper.Map<TopicDTO>(result));
         }
 
         [HttpGet("{topicId}/messages")]
-        public ActionResult<List<Message>> GetTopicMessages(int topicId)
+        public ActionResult<List<MessageDTO>> GetTopicMessages(int topicId)
         {
             var messagesOfTopic = _messagesRepository.GetByTopicID(topicId);
             var requestFromId = HttpContext.User.Identity?.Name ?? "0";
 
-            var messages = new List<Message>();
+            var messages = new List<MessageDTO>();
             var now = DateTime.UtcNow;
-
             foreach (var message in messagesOfTopic)
             {
                 if (Account.IsInRoles(HttpContext.User, new List<AccountRoles> { AccountRoles.ADMIN, AccountRoles.MODERATOR }) ||
-                    message.CreatedBy.Id == int.Parse(requestFromId))
+                    message.CreatedById == int.Parse(requestFromId))
                 {
-                    message.CreatedBy.Password = null;
-                    message.Topic.CreatedBy.Password = null;
-                    messages.Add(message);
+                    messages.Add(_mapper.Map<MessageDTO>(message));
                 }
                 else
                 {
                     if (message.IsHidden)
                     {
-                        message.BodyText = "";
+                        message.UpdateBodyText("");
                     }
                     if (now > message.GoesLive)
                     {
-                        message.CreatedBy.Password = null;
-                        message.Topic.CreatedBy.Password = null;
-                        messages.Add(message);
+                        messages.Add(_mapper.Map<MessageDTO>(message));
                     }
                 }
             }

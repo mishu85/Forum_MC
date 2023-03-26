@@ -1,0 +1,45 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  background-color: #f2f2f2;
+  padding: 20px;
+  box-sizing: border-box;
+  transition: all 0.3s ease-in-out;
+}
+
+.sidebar.expanded {
+  width: 320px;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar li {
+  margin-bottom: 10px;
+}
+
+.sidebar li a {
+  display: flex;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.sidebar li a:hover {
+  color: #555;
+}
+
+span {
+  display: none;
+}
+
+span.expanded {
+  display: inline-block;
+  padding-left: 16px;
+}

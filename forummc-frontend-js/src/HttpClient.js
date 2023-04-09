@@ -1,6 +1,7 @@
 import axios from "axios";
+import Auth from "./auth";
 
-const serverAddress = "http://127.0.0.1:6600";
+const serverAddress = "http://localhost:6600";
 
 const ApiHttpClient = () => {
   let client = axios.create({ baseURL: serverAddress + "/api" });

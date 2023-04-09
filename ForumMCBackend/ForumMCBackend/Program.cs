@@ -30,6 +30,14 @@ using (var context = new SQLiteContext())
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "_myAllowSpecificOrigins",
+                      builder =>
+                      {
+                          builder.WithOrigins("http://localhost:3000");
+                      });
+});
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -78,6 +86,10 @@ app.UsePathBase(new PathString("/api"));
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseRouting();
+
+app.UseCors(x => x.AllowAnyHeader()
+      .AllowAnyMethod()
+      .WithOrigins("http://localhost:3000"));
 
 app.UseAuthentication();
 app.UseAuthorization();

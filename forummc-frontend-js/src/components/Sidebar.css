@@ -43,3 +43,11 @@ span.expanded {
   display: inline-block;
   padding-left: 16px;
 }
+
+#login {
+  display: none;
+}
+
+#login.expanded {
+  display: block;
+}

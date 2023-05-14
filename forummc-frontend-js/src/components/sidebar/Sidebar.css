@@ -51,3 +51,7 @@ span.expanded {
 #login.expanded {
   display: block;
 }
+
+li {
+  list-style-type: none;
+}

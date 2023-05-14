@@ -1,0 +1,9 @@
+.personal {
+  display: inline-flex;
+  align-items: center;
+  /* Add additional styles as needed */
+}
+
+.personal > p {
+  padding: 10px;
+}

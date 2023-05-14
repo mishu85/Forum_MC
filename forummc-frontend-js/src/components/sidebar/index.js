@@ -6,6 +6,7 @@ import LoginSection from "./LoginSection";
 import SidebarItem from "./SidebarItem";
 import Auth from "../../auth";
 import UserHeader from "./UserHeader";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,22 +27,41 @@ export default function Sidebar() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <ul>
-        <li>
-          <a href="#" onClick={() => setIsExpanded(!isExpanded)}>
-            <MenuIcon />
-          </a>
-        </li>
-        <SidebarItem title="Home" icon={<HomeIcon />} isExpanded={isExpanded} />
-      </ul>
-      {auth.isAuthenticated() ? (
-        <UserHeader
-          username={auth.getMyUser().userName}
-          isExpanded={isExpanded}
-        />
-      ) : (
-        <LoginSection isExpanded={isExpanded} />
-      )}
+      <section id="sidebar-main">
+        <ul>
+          <SidebarItem
+            title="Home"
+            icon={<MenuIcon />}
+            onClick={() => setIsExpanded(!isExpanded)}
+          />
+          <SidebarItem
+            title="Home"
+            icon={<HomeIcon />}
+            href="/"
+            isExpanded={isExpanded}
+          />
+        </ul>
+        {auth.isAuthenticated() ? (
+          <UserHeader
+            username={auth.getMyUser().userName}
+            isExpanded={isExpanded}
+          />
+        ) : (
+          <LoginSection isExpanded={isExpanded} />
+        )}
+      </section>
+      <section id="sidebar-bottom">
+        <ul>
+          {auth.isAuthenticated() ? (
+            <SidebarItem
+              title="Log Out"
+              icon={<DeleteIcon />}
+              onClick={() => auth.logout()}
+              isExpanded={isExpanded}
+            />
+          ) : null}
+        </ul>
+      </section>
     </div>
   );
 }

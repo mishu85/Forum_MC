@@ -20,7 +20,7 @@ import "./UserHeader.css";
 export default function UserHeader(props) {
   return (
     <li>
-      <a href="/">
+      <a href="/profile">
         <Avatar
           alt={props.username}
           src=""

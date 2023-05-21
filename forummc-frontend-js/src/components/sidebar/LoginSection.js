@@ -28,10 +28,10 @@ export default function LoginSection(props) {
   const theme = createTheme({
     palette: {
       primary: {
-        main: "#ff0000",
+        main: "#6699aa",
       },
       secondary: {
-        main: "#fff200",
+        main: "#ff0000",
       },
     },
   });

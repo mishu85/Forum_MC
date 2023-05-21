@@ -7,6 +7,7 @@ import SidebarItem from "./SidebarItem";
 import Auth from "../../auth";
 import UserHeader from "./UserHeader";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -30,7 +31,7 @@ export default function Sidebar() {
       <section id="sidebar-main">
         <ul>
           <SidebarItem
-            title="Home"
+            title="Menu"
             icon={<MenuIcon />}
             onClick={() => setIsExpanded(!isExpanded)}
           />
@@ -55,7 +56,7 @@ export default function Sidebar() {
           {auth.isAuthenticated() ? (
             <SidebarItem
               title="Log Out"
-              icon={<DeleteIcon />}
+              icon={<PowerSettingsNewIcon />}
               onClick={() => auth.logout()}
               isExpanded={isExpanded}
             />

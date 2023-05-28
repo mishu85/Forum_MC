@@ -1,18 +1,23 @@
-import { Router, Routes, Route } from "react-router-dom";
-import { createBrowserHistory } from "history";
+import { Routes, Route } from "react-router-dom";
 import Home from "./components/pages/Home";
 import Account from "./components/pages/Account";
-
-const history = createBrowserHistory();
+import { GuardedRouteAuth } from "./GuardedRoute";
+import Auth from "./auth";
 
 function App() {
   return (
-    <Router location={history.location} navigator={history}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Account />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route
+        path="/profile"
+        element={
+          <GuardedRouteAuth
+            auth={Auth.getInstance().isAuthenticated()}
+            component={Account}
+          />
+        }
+      />
+      <Route path="/" element={<Home />} />
+    </Routes>
   );
 }
 

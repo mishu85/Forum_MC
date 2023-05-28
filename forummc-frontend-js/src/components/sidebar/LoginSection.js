@@ -5,8 +5,10 @@ import { login } from "../../api/accountsApi";
 import Auth from "../../auth";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginSection(props) {
+  const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,7 +23,7 @@ export default function LoginSection(props) {
       Auth.getInstance().login(myUser);
       console.log("logged in!");
       console.log(response);
-      window.open("/", "_self");
+      navigate("/");
     }
   };
 

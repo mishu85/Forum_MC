@@ -2,6 +2,7 @@ import React from "react";
 import Auth from "../../auth";
 import Avatar from "@mui/material/Avatar";
 import "./UserHeader.css";
+import { useNavigate } from "react-router-dom";
 
 // export default function UserHeader(props) {
 //   return props.isExpanded ? (
@@ -18,9 +19,11 @@ import "./UserHeader.css";
 //   ) : null;
 // }
 export default function UserHeader(props) {
+  const navigate = useNavigate();
+
   return (
     <li>
-      <a href="/profile">
+      <a href="#" onClick={() => navigate("/profile")}>
         <Avatar
           alt={props.username}
           src=""

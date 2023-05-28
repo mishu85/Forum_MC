@@ -6,7 +6,7 @@ export default function SidebarItem(props) {
 
   return (
     <li>
-      <a href={props.href ?? "#"} onClick={() => onClick()}>
+      <a href="#" onClick={() => onClick()}>
         {props.icon}
         <span className={`${props.isExpanded ? "expanded" : ""}`}>
           {props.title}

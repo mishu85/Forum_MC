@@ -8,8 +8,10 @@ import Auth from "../../auth";
 import UserHeader from "./UserHeader";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
 
   function handleMouseEnter() {
@@ -38,8 +40,8 @@ export default function Sidebar() {
           <SidebarItem
             title="Home"
             icon={<HomeIcon />}
-            href="/"
             isExpanded={isExpanded}
+            onClick={() => navigate("/")}
           />
         </ul>
         {auth.isAuthenticated() ? (

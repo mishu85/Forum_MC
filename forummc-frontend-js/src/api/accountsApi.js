@@ -14,4 +14,20 @@ async function login(userName, password) {
   return null;
 }
 
-export { login };
+async function register(userName, password) {
+  try {
+    var request = {
+      userName: userName,
+      password: password,
+    };
+    const response = await ApiHttpClient().post("/accounts/register", request);
+    if (response.status === 201) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+  return false;
+}
+
+export { login, register };

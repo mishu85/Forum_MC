@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./components/pages/Home";
+import Register from "./components/pages/Register";
 import Account from "./components/pages/Account";
-import { GuardedRouteAuth } from "./GuardedRoute";
+import { GuardedRouteAuth, GuardedRouteAuthReversed } from "./GuardedRoute";
 import Auth from "./auth";
 
 function App() {
@@ -13,6 +14,15 @@ function App() {
           <GuardedRouteAuth
             auth={Auth.getInstance().isAuthenticated()}
             component={Account}
+          />
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <GuardedRouteAuthReversed
+            auth={Auth.getInstance().isAuthenticated()}
+            component={Register}
           />
         }
       />

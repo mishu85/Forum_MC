@@ -74,6 +74,16 @@ export default function LoginSection(props) {
             </Button>
           </form>
         </Paper>
+        <p class="newacc">New account?</p>
+        <Button
+          // id = "signIn-style"
+          fullWidth
+          variant="contained"
+          type="submit"
+          onClick={() => navigate("/register")}
+        >
+          REGISTER
+        </Button>
       </section>
     </ThemeProvider>
   );
